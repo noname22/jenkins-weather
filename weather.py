@@ -63,8 +63,8 @@ class Weather:
 	def setWeather(self, score):
 		self.score = float(max(0, min(100, score))) / 100.0;
 
-		red = 1.0 - self.score;
-		green = self.score;
+		red = min(1, (1.0 - self.score) * 2);
+		green = min(1, self.score * 2);
 
 		text = font.render(self.name, True, (255, 255, 255))
 		self.text = pygame.transform.rotate(text, 90)
@@ -125,7 +125,7 @@ def update_projects():
 			projects.append(Weather(score, job['name']))
 			print "appending"
 		else:
-			projects[i].setWeather(50)
+			projects[i].setWeather(score)
 		i += 1
 
 timer = pygame.time.get_ticks() - 10000
