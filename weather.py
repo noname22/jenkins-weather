@@ -125,7 +125,7 @@ def update_projects():
 			projects.append(Weather(score, job['name']))
 			print "appending"
 		else:
-			projects[i].setWeather(score)
+			projects[i].setWeather(50)
 		i += 1
 
 timer = pygame.time.get_ticks() - 10000
