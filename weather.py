@@ -61,37 +61,42 @@ class Weather:
 		self.setWeather(score)
 
 	def setWeather(self, score):
-		self.score = float(max(0, min(100, score))) / 100.0;
+		self.score = float(min(100, score)) / 100.0;
 
 		red = min(1, (1.0 - self.score) * 2);
 		green = min(1, self.score * 2);
 
 		text = font.render(self.name, True, (255, 255, 255))
 		self.text = pygame.transform.rotate(text, 90)
-		self.score_surface = bigfont.render("%d%%" % score, True, (int(red * 255.0), int(green * 255.0), 0))
+		if score >= 0:
+			self.score_surface = bigfont.render("%d%%" % score, True, (int(red * 255.0), int(green * 255.0), 0))
+		else:
+			self.score_surface = bigfont.render("building", True, (255, 255, 255));
 
 	def redraw(self, pos):
-		turbulence = 1.0 - self.score
+		if self.score >= 0:
+			turbulence = 1.0 - self.score
+			double_blit(rainy, self.surface, (-tick * 10.0 * turbulence - pos[0], -pos[1]))
+			rainy.set_alpha(127);
+			double_blit(rainy, self.surface, (-tick * 20.0 * turbulence - pos[0], -pos[1]))
 
-		double_blit(rainy, self.surface, (-tick * 10.0 * turbulence - pos[0], -pos[1]))
-		rainy.set_alpha(127);
-		double_blit(rainy, self.surface, (-tick * 20.0 * turbulence - pos[0], -pos[1]))
+			alpha = max(min(255, int((self.score - .3) * 3.0 * 255.0)), 0)
+			cloudy.set_alpha(alpha)
+			double_blit(cloudy, self.surface, (-tick * 15 * turbulence - pos[0], -pos[1]))
+			
+			alpha = max(min(255, int((self.score - .8) * 5.0 * 255.0)), 0)
+			sunny.set_alpha(alpha)
 
-		alpha = max(min(255, int((self.score - .3) * 3.0 * 255.0)), 0)
-		cloudy.set_alpha(alpha)
-		double_blit(cloudy, self.surface, (-tick * 15 * turbulence - pos[0], -pos[1]))
-		
-		alpha = max(min(255, int((self.score - .8) * 5.0 * 255.0)), 0)
-		sunny.set_alpha(alpha)
+			#blit_center(sunny, self.surface)
+			self.surface.blit(sunny, (-490, 0))
 
-		#blit_center(sunny, self.surface)
-		self.surface.blit(sunny, (-490, 0))
+		else:
+			self.surface.fill((127, 127, 127))
 
 		self.surface.blit(foreground, ((-pos[0], -pos[1])))
-
 		darkness.set_alpha(int((0.5 - self.score * .5) * 255.0))
-
 		self.surface.blit(darkness, (0, 0))
+
 		self.surface.blit(self.textbg, (0, 0))
 		self.surface.blit(self.text, (5, self.surface.get_height() - self.text.get_height() - 5))
 		self.surface.blit(self.score_surface, (self.surface.get_width() - self.score_surface.get_width() - 5, 5))
@@ -102,7 +107,14 @@ response = eval(get_web_page(jenkins_url))
 def update_projects():
 	print "updating joblist"
 	append = False
-	if(len(projects) != len(response['jobs'])):
+
+	numJobs = 0
+
+	for job in response['jobs']:
+		if not job['name'].startswith("Replace"):
+			numJobs += 1
+
+	if(len(projects) != numJobs):
 		print "new job created"
 		del projects[:]
 		append = True
