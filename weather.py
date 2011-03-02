@@ -113,7 +113,7 @@ def update_projects():
 		if job['name'].startswith("Replace"):
 			break
 
-		score = 0
+		score = -1
 		job = eval(get_web_page('%s/api/python' % job['url']))
 
 		if 'healthReport' in job and len(job['healthReport']) > 0:
