@@ -11,7 +11,13 @@ def get_web_page(url):
 
 pygame.init()
 
-screen = pygame.display.set_mode((1920, 1080))
+flags = 0
+
+if len(sys.argv) > 1:
+	flags = pygame.FULLSCREEN
+	pygame.mouse.set_visible(False)
+
+screen = pygame.display.set_mode((1360, 864), flags)
 mirror = pygame.Surface((screen.get_width(), screen.get_height() / 4))
 mirror_gradient = pygame.Surface(mirror.get_size(), flags = pygame.SRCALPHA)
 
@@ -52,7 +58,7 @@ def double_blit(src, dest, pos):
 
 class Weather:
 	def __init__(self, score, name):
-		self.surface = pygame.Surface((300,  750))
+		self.surface = pygame.Surface((200,  600))
 		self.textbg = pygame.Surface((50, self.surface.get_height()))
 		self.textbg.fill(pygame.Color(0, 0, 0))
 		self.textbg.set_alpha(None)
@@ -144,7 +150,7 @@ timer = pygame.time.get_ticks() - 10000
 
 while 1:
 	for event in pygame.event.get():
-		if event.type == pygame.QUIT:
+		if event.type == pygame.QUIT or event.type == pygame.KEYDOWN:
 			sys.exit()
 
 	i = 0
