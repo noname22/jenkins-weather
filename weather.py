@@ -1,8 +1,10 @@
 #!/usr/bin/python
 
-import urllib2, pygame, sys
-
+# Settings
 jenkins_url="http://jenkins:8080/api/python"
+res = (1360, 864)
+
+import urllib2, pygame, sys
 
 def get_web_page(url):
 	req = urllib2.Request(url, None, {'User-agent': 'Mozilla/5.0'})
@@ -17,7 +19,7 @@ if len(sys.argv) > 1:
 	flags = pygame.FULLSCREEN
 	pygame.mouse.set_visible(False)
 
-screen = pygame.display.set_mode((1360, 864), flags)
+screen = pygame.display.set_mode(res, flags)
 mirror = pygame.Surface((screen.get_width(), screen.get_height() / 4))
 mirror_gradient = pygame.Surface(mirror.get_size(), flags = pygame.SRCALPHA)
 
@@ -43,9 +45,7 @@ bigfont = pygame.font.Font(pygame.font.match_font("freeserif"), 50)
 tick = 50.0
 
 def blit_center(src, dest):
-	dest_size = dest.get_size()
-	src_size = dest.get_size()
-	dest.blit(src, (dest_size[0] / 2 - src_size[0] / 2, dest_size[1] / 2 - src_size[1] / 2))
+	dest.blit(src, (dest.get_width() / 2 - src.get_width() / 2, dest.get_height() / 2 - src.get_height() / 2))
 
 def double_blit(src, dest, pos):
 	myPos = pos;
@@ -108,11 +108,12 @@ class Weather:
 		self.surface.blit(self.score_surface, (self.surface.get_width() - self.score_surface.get_width() - 5, 5))
 
 projects = []
-response = eval(get_web_page(jenkins_url))
 
 def update_projects():
 	print "updating joblist"
 	append = False
+	
+	response = eval(get_web_page(jenkins_url))
 
 	numJobs = 0
 
@@ -148,35 +149,52 @@ def update_projects():
 
 timer = pygame.time.get_ticks() - 10000
 
+isError = False
+
 while 1:
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT or event.type == pygame.KEYDOWN:
 			sys.exit()
 
-	i = 0
-	screen_size = screen.get_size()
-	mirror_size = mirror.get_size()
+	screen.fill((0, 0, 0))
 
-	for project in projects:
-		project_size = project.surface.get_size()
-		pos = (
-                                screen_size[0] / 2 - (len(projects) * (project_size[0] + 20)) / 2 + (project_size[0] + 20) * i,
-                                screen_size[1] / 3.5 - project_size[1] / 3
-                        )
+	if not isError:
+		i = 0
+		screen_size = screen.get_size()
+		mirror_size = mirror.get_size()
+
+		for project in projects:
+			project_size = project.surface.get_size()
+			pos = (
+					screen_size[0] / 2 - (len(projects) * (project_size[0] + 20)) / 2 + (project_size[0] + 20) * i,
+					screen_size[1] / 3.5 - project_size[1] / 3
+				)
+			
+			project.redraw(pos)
+			screen.blit(project.surface, pos)
+			i += 1
+
+		mirror.blit(screen, (0, 0), (0, screen_size[1] - mirror_size[1] * 2, screen_size[0], mirror_size[1]))
+		mirror = pygame.transform.flip(mirror, False, True)
+		mirror.blit(mirror_gradient, (0, 0))
+		screen.blit(mirror, (0, screen_size[1] - mirror_size[1]))
+
+		tick += .1
+	else:
+		blit_center(error_surface, screen)
 		
-		project.redraw(pos)
-		screen.blit(project.surface, pos)
-		i += 1
-
-	mirror.blit(screen, (0, 0), (0, screen_size[1] - mirror_size[1] * 2, screen_size[0], mirror_size[1]))
-	mirror = pygame.transform.flip(mirror, False, True)
-	mirror.blit(mirror_gradient, (0, 0))
-	screen.blit(mirror, (0, screen_size[1] - mirror_size[1]))
-
 	pygame.display.update();
 	pygame.time.delay(16);
-	tick += .1
+
 
 	if pygame.time.get_ticks() - timer > 10000:
 		timer = pygame.time.get_ticks()
-		update_projects()
+		
+		try:
+			update_projects()
+			isError = False
+		except urllib2.URLError:
+			print "Error connecting to %s" % jenkins_url
+			error_surface = bigfont.render("Error connecting to %s" % jenkins_url, True, (192, 0, 0))
+			isError = True
+		
