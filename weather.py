@@ -20,7 +20,7 @@ if len(sys.argv) > 1:
 	pygame.mouse.set_visible(False)
 
 screen = pygame.display.set_mode(res, flags)
-mirror = pygame.Surface((screen.get_width(), screen.get_height() / 4))
+mirror = pygame.Surface((screen.get_width(), screen.get_height() / 5))
 mirror_gradient = pygame.Surface(mirror.get_size(), flags = pygame.SRCALPHA)
 
 for i in range(mirror_gradient.get_height()):
@@ -58,7 +58,7 @@ def double_blit(src, dest, pos):
 
 class Weather:
 	def __init__(self, score, name):
-		self.surface = pygame.Surface((200,  600))
+		self.surface = pygame.Surface((200,  575))
 		self.textbg = pygame.Surface((50, self.surface.get_height()))
 		self.textbg.fill(pygame.Color(0, 0, 0))
 		self.textbg.set_alpha(None)
