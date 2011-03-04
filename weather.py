@@ -2,7 +2,7 @@
 
 # Settings
 jenkins_url="http://jenkins:8080/api/python"
-res = (1360, 864)
+res = (1360, 768)
 
 import urllib2, pygame, sys
 
