@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 # Settings
-jenkins_url="http://jenkins:8080/api/python"
+jenkins_url="http://jenkins:8080/view/On%20TV/api/python"
 res = (1360, 768)
 
 import urllib2, pygame, sys
@@ -40,7 +40,7 @@ sunny = pygame.image.load("sunny.png")
 sun = pygame.image.load("sun.png")
 
 font = pygame.font.Font(pygame.font.match_font("freeserif"), 35)
-bigfont = pygame.font.Font(pygame.font.match_font("freeserif"), 50)
+bigfont = pygame.font.Font(pygame.font.match_font("freeserif"), 25)
 
 tick = 50.0
 
@@ -58,7 +58,7 @@ def double_blit(src, dest, pos):
 
 class Weather:
 	def __init__(self, score, name):
-		self.surface = pygame.Surface((200,  575))
+		self.surface = pygame.Surface((100,  575))
 		self.textbg = pygame.Surface((50, self.surface.get_height()))
 		self.textbg.fill(pygame.Color(0, 0, 0))
 		self.textbg.set_alpha(None)
@@ -116,22 +116,21 @@ def update_projects():
 	response = eval(get_web_page(jenkins_url))
 
 	numJobs = 0
+	useJobs = []
 
 	for job in response['jobs']:
-		if not job['name'].startswith("Replace"):
-			numJobs += 1
+		numJobs += 1
+		useJobs.append(job)
 
 	if(len(projects) != numJobs):
 		print "new job created"
 		del projects[:]
 		append = True
 
+	print 'numjobs: ', numJobs
 	i = 0
 
-	for job in response['jobs']:
-		if job['name'].startswith("Replace"):
-			break
-
+	for job in useJobs:
 		score = -1
 		job = eval(get_web_page('%s/api/python' % job['url']))
 
